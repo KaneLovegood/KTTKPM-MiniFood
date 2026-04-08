@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useState } from 'react'
-import { loginUser } from '../api/userApi'
+import { getUsers, loginUser } from '../api/userApi'
 import { extractUserFromLogin } from '../utils/normalizers'
 import { STORAGE_KEYS } from '../utils/storageKeys'
 import { getStorageValue, removeStorageValue, setStorageValue } from '../utils/storage'
@@ -12,9 +12,26 @@ export const AuthProvider = ({ children }) => {
   const login = async ({ username, password }) => {
     const payload = await loginUser({ username, password })
     const normalizedUser = extractUserFromLogin(payload, username)
-    setUser(normalizedUser)
-    setStorageValue(STORAGE_KEYS.authUser, normalizedUser)
-    return normalizedUser
+
+    let resolvedUser = normalizedUser
+    if (!normalizedUser.id) {
+      const usersPayload = await getUsers()
+      const users = Array.isArray(usersPayload) ? usersPayload : []
+      const matchedUser = users.find((item) => item?.username === normalizedUser.username)
+      if (!matchedUser?.id) {
+        throw new Error('Khong tim thay userId cho tai khoan dang nhap')
+      }
+      resolvedUser = {
+        ...normalizedUser,
+        id: matchedUser.id,
+        fullName: normalizedUser.fullName || matchedUser.fullName || '',
+        role: normalizedUser.role || matchedUser.role || 'USER',
+      }
+    }
+
+    setUser(resolvedUser)
+    setStorageValue(STORAGE_KEYS.authUser, resolvedUser)
+    return resolvedUser
   }
 
   const logout = () => {

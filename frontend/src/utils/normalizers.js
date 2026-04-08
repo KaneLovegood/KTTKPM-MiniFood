@@ -18,7 +18,7 @@ export const normalizeOrder = (rawOrder) => ({
 })
 
 export const extractUserFromLogin = (payload, fallbackUsername) => ({
-  id: payload?.id ?? payload?.userId ?? payload?.data?.id ?? payload?.data?.userId ?? fallbackUsername,
+  id: payload?.id ?? payload?.userId ?? payload?.data?.id ?? payload?.data?.userId ?? null,
   username: payload?.username ?? payload?.data?.username ?? fallbackUsername,
   role: payload?.role ?? payload?.data?.role ?? 'USER',
   fullName: payload?.fullName ?? payload?.data?.fullName ?? '',

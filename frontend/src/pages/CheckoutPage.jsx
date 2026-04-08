@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createOrder } from '../api/orderApi'
+import { createOrder, updateOrderStatus } from '../api/orderApi'
 import { createPayment } from '../api/paymentApi'
 import { getApiErrorMessage } from '../api/httpClient'
 import Button from '../components/common/Button'
@@ -24,8 +24,8 @@ export default function CheckoutPage() {
 
   const orderItemsPayload = useMemo(
     () =>
-      items.map((item) => ({
-        id: item.id,
+      items.map((item, index) => ({
+        id: index + 1,
         foodId: item.id,
         foodName: item.name,
         price: item.price,
@@ -46,8 +46,12 @@ export default function CheckoutPage() {
   const handleCheckout = async () => {
     setIsSubmitting(true)
     try {
+      if (!user?.id) {
+        throw new Error('Khong tim thay userId tu phien dang nhap')
+      }
+
       const createdOrder = await createOrder({
-        userId: user?.id,
+        userId: user.id,
         items: orderItemsPayload,
         totalPrice: totalAmount,
         status: 'CREATED',
@@ -59,8 +63,12 @@ export default function CheckoutPage() {
 
       await createPayment({
         orderId,
-        method: paymentMethod,
+        userId: user.id,
+        amount: totalAmount,
+        paymentMethod,
       })
+
+      await updateOrderStatus(orderId, 'PAID')
 
       clearCart()
       showToast('success', `Thanh toan thanh cong don #${orderId}.`)
