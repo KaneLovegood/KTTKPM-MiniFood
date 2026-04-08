@@ -6,3 +6,5 @@ const unwrap = (response) => response.data
 
 export const createOrder = (payload) => client.post('/orders', payload).then(unwrap)
 export const getOrders = () => client.get('/orders').then(unwrap)
+export const updateOrderStatus = (id, status) =>
+  client.put(`/orders/${id}/status`, { status }).then(unwrap)

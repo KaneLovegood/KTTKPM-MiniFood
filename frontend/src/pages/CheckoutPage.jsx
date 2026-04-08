@@ -25,7 +25,10 @@ export default function CheckoutPage() {
   const orderItemsPayload = useMemo(
     () =>
       items.map((item) => ({
+        id: item.id,
         foodId: item.id,
+        foodName: item.name,
+        price: item.price,
         quantity: item.quantity,
       })),
     [items],
@@ -46,6 +49,8 @@ export default function CheckoutPage() {
       const createdOrder = await createOrder({
         userId: user?.id,
         items: orderItemsPayload,
+        totalPrice: totalAmount,
+        status: 'CREATED',
       })
       const orderId = createdOrder?.id ?? createdOrder?.orderId
       if (!orderId) {
